@@ -1,9 +1,9 @@
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 #include <time.h>
 #define SHEEP_DYNARRAY_IMPLEMENTATION
 #include "dynarray.h"
@@ -41,16 +41,17 @@ void swap(int l, int r) {
     array[r] = temp;
 }
 
-#define dotick do { \
-                tick++; \
-                SDL_Delay(sort_delay_ms); \
-            } while (0)
+#define dotick                                                                 \
+    do {                                                                       \
+        tick++;                                                                \
+        SDL_Delay(sort_delay_ms);                                              \
+    } while (0)
 
 void *bubble_sort(void *args) {
     unused(args);
     for (int i = 0; i < dynarray_len(array); i++) {
         for (int j = 0; j < dynarray_len(array) - 1; j++) {
-            if (array[j] > array[j+1]) {
+            if (array[j] > array[j + 1]) {
                 swap(j, j + 1);
             }
             current_elem = j;
@@ -70,7 +71,8 @@ void *selection_sort(void *args) {
                 cur_min = j;
             dotick;
         }
-        if (i != cur_min) swap(i, cur_min);
+        if (i != cur_min)
+            swap(i, cur_min);
     }
     return NULL;
 }
@@ -104,7 +106,8 @@ void merge_sort_merge(int l, int m, int r) {
 }
 
 void merge_sort_help(int l, int r) {
-    if (r - l < 1) return;
+    if (r - l < 1)
+        return;
     int m = l + (r - l) / 2;
     merge_sort_help(l, m);
     merge_sort_help(m + 1, r);
@@ -117,13 +120,20 @@ void *merge_sort(void *args) {
     return NULL;
 }
 
+void *stop_sort(void *args) {
+    unused(args);
+    return NULL;
+}
 
 /// TODOOOOOOOOOO: more sorting algos
 
 struct {
     const char *name;
-    void* (*callback)(void*);
-} sorts[] = {{" Bubble ", bubble_sort}, {"Selection", selection_sort}, {"  Merge  ", merge_sort}};
+    void *(*callback)(void *);
+} sorts[] = {{"Stop", stop_sort},
+             {" Bubble ", bubble_sort},
+             {"Selection", selection_sort},
+             {"  Merge  ", merge_sort}};
 
 void *gui(void *args) {
     unused(args);
@@ -142,10 +152,10 @@ void *gui(void *args) {
     sui_sdl_init_ctx(&ctx);
     sui_sdl_init(rend, font);
     bool running = true;
-    int w1 = frame_width / dynarray_len(array);
-    int h1 = frame_height / max_elem;
-    char tick_buf[64] = { 0 };
-    void *(*sel_function)(void*) = NULL;
+    float w1 = (float)frame_width / dynarray_len(array);
+    float h1 = (float)frame_height / max_elem;
+    char tick_buf[64] = {0};
+    void *(*sel_function)(void *) = NULL;
 
     while (running) {
         /* update */
@@ -175,8 +185,8 @@ void *gui(void *args) {
         sui_text(&ctx, tick_buf, 0, 0);
         if (sui_btn(&ctx, "Random", 0, frame_height, 0)) {
             rnd_array(dynarray_len(array));
-            w1 = frame_width / dynarray_len(array);
-            h1 = frame_height / max_elem;
+            w1 = (float)frame_width / dynarray_len(array);
+            h1 = (float)frame_height / max_elem;
         }
         int x = 120, y = frame_height;
         for (size_t i = 0; i < sizeof sorts / sizeof *sorts; i++) {
