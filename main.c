@@ -23,6 +23,7 @@ static int *array = dynarray_new;
 static int max_elem = 0;
 static int current_elem = 0;
 static int sort_delay_ms = 10;
+static int n = 16;
 static pthread_t *running_sorts = dynarray_new;
 
 void rnd_array(int lim) {
@@ -59,6 +60,7 @@ void *selection_sort(void *args) {
     unused(args);
     int cur_min = 0;
 
+    // TODOOOO: fix bug somewhere her idk idk
     for (int i = 0; i < dynarray_len(array) - 1; i++) {
         cur_min = i;
         for (int j = i + 1; j < dynarray_len(array); j++) {
@@ -73,6 +75,8 @@ void *selection_sort(void *args) {
 
     return NULL;
 }
+
+/// TODOOOOOOOOOO: more sorting algos
 
 struct {
     const char *name;
@@ -165,19 +169,18 @@ void *gui(void *args) {
     SDL_Quit();
     TTF_CloseFont(font);
     TTF_Quit();
-    return 0;
+    return NULL;
 }
 
 int main() {
     srand(time(NULL));
-    dynarray_setlen(array, 100);
-    rnd_array(100);
+    dynarray_setlen(array, n);
+    rnd_array(n);
 
     pthread_t thread;
     pthread_create(&thread, NULL, gui, NULL);
 
     pthread_join(thread, NULL);
-
 
     return 0;
 }
