@@ -23,12 +23,12 @@ static int *array = dynarray_new;
 static int max_elem = 0;
 static int current_elem = 0;
 static int sort_delay_ms = 10;
-static int n = 16;
+static int n = 200;
 static pthread_t *running_sorts = dynarray_new;
 
 void rnd_array(int lim) {
     for (int i = 0; i < dynarray_len(array); i++) {
-        array[i] = rand() % lim;
+        array[i] = rand() % lim + 1;
         if (max_elem < array[i])
             max_elem = array[i];
     }
@@ -36,10 +36,15 @@ void rnd_array(int lim) {
 
 void swap(int l, int r) {
     /* XOR based swapping */
-    array[l] ^= array[r];
-    array[r] ^= array[l];
-    array[l] ^= array[r];
+    int temp = array[l];
+    array[l] = array[r];
+    array[r] = temp;
 }
+
+#define dotick do { \
+                tick++; \
+                SDL_Delay(sort_delay_ms); \
+            } while (0)
 
 void *bubble_sort(void *args) {
     unused(args);
@@ -49,8 +54,7 @@ void *bubble_sort(void *args) {
                 swap(j, j + 1);
             }
             current_elem = j;
-            tick++;
-            SDL_Delay(sort_delay_ms);
+            dotick;
         }
     }
     return NULL;
@@ -58,35 +62,73 @@ void *bubble_sort(void *args) {
 
 void *selection_sort(void *args) {
     unused(args);
-    int cur_min = 0;
-
-    // TODOOOO: fix bug somewhere her idk idk
     for (int i = 0; i < dynarray_len(array) - 1; i++) {
-        cur_min = i;
+        int cur_min = i;
         for (int j = i + 1; j < dynarray_len(array); j++) {
             current_elem = j;
             if (array[j] < array[cur_min])
                 cur_min = j;
-            tick++;
-            SDL_Delay(sort_delay_ms);
+            dotick;
         }
-        swap(i, cur_min);
+        if (i != cur_min) swap(i, cur_min);
     }
-
     return NULL;
 }
+
+void merge_sort_merge(int l, int m, int r) {
+    int ln = m - l + 1;
+    int rn = r - m;
+    int *la = malloc(sizeof *la * ln);
+    int *ra = malloc(sizeof *ra * rn);
+    int li = 0, ri = 0;
+    memcpy(la, array + l, sizeof *la * ln);
+    memcpy(ra, array + m + 1, sizeof *ra * rn);
+    int *put = array + l;
+    while (li < ln && ri < rn) {
+        if (la[li] <= ra[ri])
+            *put++ = la[li++];
+        else
+            *put++ = ra[ri++];
+        dotick;
+    }
+    while (li < ln) {
+        *put++ = la[li++];
+        dotick;
+    }
+    while (ri < rn) {
+        *put++ = ra[ri++];
+        dotick;
+    }
+    free(la);
+    free(ra);
+}
+
+void merge_sort_help(int l, int r) {
+    if (r - l < 1) return;
+    int m = l + (r - l) / 2;
+    merge_sort_help(l, m);
+    merge_sort_help(m + 1, r);
+    merge_sort_merge(l, m, r);
+}
+
+void *merge_sort(void *args) {
+    unused(args);
+    merge_sort_help(0, dynarray_len(array) - 1);
+    return NULL;
+}
+
 
 /// TODOOOOOOOOOO: more sorting algos
 
 struct {
     const char *name;
     void* (*callback)(void*);
-} sorts[] = {{"Bubble sort", bubble_sort}, {"Selection Sort", selection_sort}};
+} sorts[] = {{" Bubble ", bubble_sort}, {"Selection", selection_sort}, {"  Merge  ", merge_sort}};
 
 void *gui(void *args) {
     unused(args);
-    const int width = 640;
-    const int height = 480;
+    const int width = 1200;
+    const int height = 800;
     const int frame_width = width;
     const int frame_height = 300;
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -141,7 +183,7 @@ void *gui(void *args) {
             if (sui_btn(&ctx, sorts[i].name, x, y, i)) {
                 sel_function = sorts[i].callback;
             }
-            x += 120;
+            x += 140;
             if (x > width) {
                 x = 0;
                 y += 80;
@@ -172,7 +214,10 @@ void *gui(void *args) {
     return NULL;
 }
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc > 1 && argv[1] != NULL) {
+        n = strtol(argv[1], NULL, 10);
+    }
     srand(time(NULL));
     dynarray_setlen(array, n);
     rnd_array(n);
