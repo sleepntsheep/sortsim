@@ -5,5 +5,5 @@ LDFLAGS += -lSDL2 -lSDL2_ttf
 all: sortsim
 
 sortsim: *.c *.h
-	$(CC) $(CFLAGS) -o sortsim *.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -o sortsim main.c $(LDFLAGS)
 

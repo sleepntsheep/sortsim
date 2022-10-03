@@ -54,6 +54,8 @@ void sui_text(sui_ctx *ctx, const char *label, int x, int y);
 inline bool sui_intersect(int x, int y, int w, int h, int mx, int my);
 bool sui_slider_float(sui_ctx *ctx, float vmin, float *value, float vmax, int x,
                       int y, int w, int h);
+bool sui_checkbox_label(sui_ctx *ctx, bool value, const char *label, int x,
+                        int y, int size, int id);
 
 #endif /* SUI_H_ */
 
@@ -106,6 +108,24 @@ bool sui_slider_float(sui_ctx *ctx, float vmin, float *value, float vmax, int x,
         return true;
     }
     return false;
+}
+
+bool sui_checkbox_label(sui_ctx *ctx, bool value, const char *label, int x,
+                        int y, int size, int id) {
+    ctx->draw_rect(ctx, x, y, size, size,
+                   value ? ctx->style.fg2 : ctx->style.bg2);
+    ctx->draw_text(ctx, label, x + size, y, ctx->style.fg2);
+    if (!ctx->mouse_pressed) {
+        ctx->selected_id = -1;
+        return value;
+    }
+    if (ctx->selected_id == id)
+        return value;
+    if (sui_intersect(x, y, size, size, ctx->mouse_x, ctx->mouse_y)) {
+        ctx->selected_id = id;
+        return !value;
+    }
+    return value;
 }
 
 void sui_text(sui_ctx *ctx, const char *label, int x, int y) {

@@ -24,6 +24,7 @@ static size_t current_elem = 0;
 static int sort_delay_ms = 10;
 static int n = 200;
 static pthread_t *running_sorts = dynarray_new;
+static bool highlight = true;
 
 typedef struct {
     int compare, access;
@@ -194,7 +195,7 @@ void *gui(void *args) {
             SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
             SDL_RenderClear(rend);
             for (size_t i = 0; i < dynarray_len(array); i++) {
-                if (current_elem == i)
+                if (current_elem == i && highlight)
                     SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
                 else
                     SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
@@ -211,6 +212,8 @@ void *gui(void *args) {
             float temp_sort_delay_ms = sort_delay_ms;
             sui_slider_float(&ctx, 5, &temp_sort_delay_ms, 40, 120,
                              frame_height + 5, 200, 20);
+            highlight = sui_checkbox_label(&ctx, highlight, "Highlight", 450,
+                                           frame_height + 5, 20, -2);
             sort_delay_ms = temp_sort_delay_ms;
             int x = 120, y = frame_height + 50;
             for (size_t i = 0; i < sizeof sorts / sizeof *sorts; i++) {
