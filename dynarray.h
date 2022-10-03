@@ -235,7 +235,7 @@ static T *dynarray_growf_wrapper(T *a, size_t cap, size_t membsize) {
  * @return pointer to dynamic array (might be moved by realloc)
  */
 #define dynarray_setlen(A, n)                                                  \
-    (dynarray_setcap((A), (n)), dynarray_info(A)->length = (n), (A))
+    (dynarray_setcap((A), (n)), dynarray_info(A)->length = (n))
 /**
  * @brief push n element starting at pointer p to dynamic array
  * @param A dynamic array

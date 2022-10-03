@@ -39,6 +39,7 @@ void sui_sdl_init(SDL_Renderer *renderer, TTF_Font *font) {
 
 void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h,
                        sui_rgba color) {
+    (void)ctx;
     SDL_SetRenderDrawColor(sui_sdl_renderer, color.r, color.g, color.b,
                            color.a);
     SDL_Rect rect = {x, y, w, h};
@@ -47,6 +48,7 @@ void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h,
 
 void sui_sdl_draw_text(sui_ctx *ctx, const char *text, int x, int y,
                        sui_rgba color) {
+    (void)ctx;
     SDL_Color sdlcolor = {color.r, color.g, color.b, color.a};
     SDL_Surface *surface = TTF_RenderUTF8_Blended(sui_sdl_font, text, sdlcolor);
     SDL_Texture *texture =
