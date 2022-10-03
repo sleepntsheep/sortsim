@@ -14,8 +14,10 @@ void sui_sdl_handle_event(sui_ctx *ctx, SDL_Event ev);
 void sui_sdl_end_event();
 void sui_sdl_init(SDL_Renderer *renderer, TTF_Font *font);
 void sui_sdl_get_text_size(const char *text, int *w, int *h);
-void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h);
-void sui_sdl_draw_text(sui_ctx *ctx, const char *text, int x, int y);
+void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h,
+                       sui_rgba color);
+void sui_sdl_draw_text(sui_ctx *ctx, const char *text, int x, int y,
+                       sui_rgba color);
 
 #endif /* SUI_SDL_RENDERER_H_ */
 
@@ -35,17 +37,18 @@ void sui_sdl_init(SDL_Renderer *renderer, TTF_Font *font) {
     sui_sdl_font = font;
 }
 
-void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h) {
-    SDL_SetRenderDrawColor(sui_sdl_renderer, ctx->style.bg.r, ctx->style.bg.g,
-                           ctx->style.bg.b, ctx->style.bg.a);
+void sui_sdl_draw_rect(sui_ctx *ctx, int x, int y, int w, int h,
+                       sui_rgba color) {
+    SDL_SetRenderDrawColor(sui_sdl_renderer, color.r, color.g, color.b,
+                           color.a);
     SDL_Rect rect = {x, y, w, h};
     SDL_RenderFillRect(sui_sdl_renderer, &rect);
 }
 
-void sui_sdl_draw_text(sui_ctx *ctx, const char *text, int x, int y) {
-    SDL_Color color = {ctx->style.fg.r, ctx->style.fg.g, ctx->style.fg.b,
-                       ctx->style.fg.a};
-    SDL_Surface *surface = TTF_RenderUTF8_Blended(sui_sdl_font, text, color);
+void sui_sdl_draw_text(sui_ctx *ctx, const char *text, int x, int y,
+                       sui_rgba color) {
+    SDL_Color sdlcolor = {color.r, color.g, color.b, color.a};
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(sui_sdl_font, text, sdlcolor);
     SDL_Texture *texture =
         SDL_CreateTextureFromSurface(sui_sdl_renderer, surface);
     SDL_Rect rect = {x, y, surface->w, surface->h};
