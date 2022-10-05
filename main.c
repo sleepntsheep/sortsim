@@ -5,12 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define SHEEP_DYNARRAY_IMPLEMENTATION
-#include "dynarray.h"
 
 #define SDL_DISABLE_IMMINTRIN_H
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+
+#define SHEEP_DYNARRAY_IMPLEMENTATION
+#include "dynarray.h"
 #define SUI_IMPLEMENTATION
 #define SUI_SDL_RENDERER_IMPLEMENTATION
 #include "sui.h"
@@ -25,6 +26,7 @@ static int sort_delay_ms = 10;
 static int n = 200;
 static pthread_t *running_sorts = dynarray_new;
 static bool highlight = true;
+static bool paused = false;
 
 typedef struct {
     int compare, access;
@@ -122,7 +124,7 @@ void *merge_sort(void *args) {
     return NULL;
 }
 
-void *stop_sort(void *args) {
+void *clear_stat(void *args) {
     unused(args);
     return NULL;
 }
@@ -133,7 +135,7 @@ struct {
     const char *name;
     void *(*callback)(void *);
 } sorts[] = {{"Random", rnd_array},
-             {"Stop", stop_sort},
+             {"Clear", clear_stat},
              {" Bubble ", bubble_sort},
              {"Selection", selection_sort},
              {"  Merge  ", merge_sort}};
@@ -148,7 +150,7 @@ void *gui(void *args) {
     TTF_Init();
     SDL_Window *win;
     SDL_Renderer *rend;
-    TTF_Font *font = TTF_OpenFont("tahoma.ttf", 20);
+    TTF_Font *font = TTF_OpenFont("tahoma.ttf", 24);
     SDL_CreateWindowAndRenderer(width, height, 0, &win, &rend);
     sui_ctx ctx;
     sui_ctx_init(&ctx);
@@ -207,14 +209,12 @@ void *gui(void *args) {
 
         /* draw ui */
         {
-            snprintf(buf, sizeof buf - 1, "%d", stat.access);
+            snprintf(buf, sizeof buf - 1, "Array Access: %d", stat.access);
             sui_text(&ctx, buf, 0, 0);
-            float temp_sort_delay_ms = sort_delay_ms;
-            sui_slider_float(&ctx, 5, &temp_sort_delay_ms, 40, 120,
-                             frame_height + 5, 200, 20);
+            sui_slider_label_int(&ctx, "Delay", 5, &sort_delay_ms, 40, 120,
+                                 frame_height + 5, 200);
             highlight = sui_checkbox_label(&ctx, highlight, "Highlight", 450,
-                                           frame_height + 5, 20, -2);
-            sort_delay_ms = temp_sort_delay_ms;
+                                           frame_height + 5, -2);
             int x = 120, y = frame_height + 50;
             for (size_t i = 0; i < sizeof sorts / sizeof *sorts; i++) {
                 if (sui_btn(&ctx, sorts[i].name, x, y, i)) {

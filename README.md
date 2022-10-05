@@ -2,7 +2,7 @@
 
 Simple sorting simulator in C, SDL2 with pthread.h
 
-![sortsim](https://raw.githubusercontent.com/0x0f0f0f/sortsim/master/sortsim.png)
+![sortsim](pic.png)
 
 ## Contributing
 
